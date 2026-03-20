@@ -24,7 +24,7 @@ from typing import Any, Dict, Optional, Tuple
 
 
 HOME = Path.home()
-DEFAULT_OUTPUT_DIR = HOME / "Documents" / "mywl" / "1-输入" / "01-待整理"
+DEFAULT_OUTPUT_DIR = ""
 LOG_DIR = HOME / "Library" / "Logs" / "x-bookmark-to-obsidian"
 LOG_FILE = LOG_DIR / "native-host.log"
 X_FETCHER_PATH = HOME / ".agents" / "skills" / "x-fetcher" / "scripts" / "fetch_tweet.py"
@@ -350,7 +350,9 @@ def run_x_fetcher(url: str) -> Tuple[Optional[Dict[str, Any]], str]:
 
 def save_x_bookmark(payload: Dict[str, Any]) -> Dict[str, Any]:
     url = normalize_url(str(payload.get("url", "")))
-    output_dir_raw = str(payload.get("output_dir", "") or DEFAULT_OUTPUT_DIR)
+    output_dir_raw = str(payload.get("output_dir", "") or DEFAULT_OUTPUT_DIR).strip()
+    if not output_dir_raw:
+        return {"success": False, "error": "please configure obsidian output directory first"}
     output_dir, dir_err = validate_directory_path(output_dir_raw)
     if dir_err:
         return {"success": False, "error": dir_err}
@@ -409,10 +411,10 @@ def main() -> None:
 
         if action == "ping":
             send_message({
-        "success": True,
-        "version": "2.0.0",
-        "output_dir": str(DEFAULT_OUTPUT_DIR),
-        "x_fetcher": str(X_FETCHER_PATH),
+                "success": True,
+                "version": "2.0.0",
+                "output_dir": DEFAULT_OUTPUT_DIR,
+                "x_fetcher": str(X_FETCHER_PATH),
             })
             return
 

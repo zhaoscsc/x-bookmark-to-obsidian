@@ -1,4 +1,5 @@
 document.addEventListener("DOMContentLoaded", async () => {
+  const DEFAULT_OUTPUT_DIR = "";
   const nativeStatusEl = document.getElementById("native-status");
   const lastResultEl = document.getElementById("last-result");
   const outputDirEl = document.getElementById("output-dir");
@@ -7,7 +8,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const saveDirStatusEl = document.getElementById("save-dir-status");
 
   const syncState = await chrome.storage.sync.get({
-    obsidianOutputDir: "/Users/zhaoyue/Documents/mywl/1-输入/01-待整理",
+    obsidianOutputDir: DEFAULT_OUTPUT_DIR,
   });
   outputDirEl.value = syncState.obsidianOutputDir || "";
 

@@ -1,5 +1,5 @@
 const NATIVE_HOST_NAME = "com.btl.file_writer";
-const DEFAULT_OUTPUT_DIR = "/Users/zhaoyue/Documents/mywl/1-输入/01-待整理";
+const DEFAULT_OUTPUT_DIR = "";
 
 chrome.runtime.onInstalled.addListener(async () => {
   const syncState = await chrome.storage.sync.get({
@@ -70,7 +70,11 @@ async function handleSaveBookmark(payload) {
   const syncState = await chrome.storage.sync.get({
     obsidianOutputDir: DEFAULT_OUTPUT_DIR,
   });
-  safePayload.output_dir = syncState.obsidianOutputDir || DEFAULT_OUTPUT_DIR;
+  safePayload.output_dir = (syncState.obsidianOutputDir || DEFAULT_OUTPUT_DIR).trim();
+
+  if (!safePayload.output_dir) {
+    throw new Error("请先在插件弹窗中设置 Obsidian 保存路径");
+  }
 
   const result = await chrome.runtime.sendNativeMessage(NATIVE_HOST_NAME, {
     action: "save_x_bookmark",
