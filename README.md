@@ -1,6 +1,6 @@
-# X 收藏到 Obsidian
+# X Bookmark to Obsidian
 
-一个 Chrome 扩展 + Native Host 组合方案。
+A Chrome extension + Native Host workflow for saving X bookmarks into Obsidian.
 
 你在 `x.com` 点击收藏后，插件会自动抓取帖子内容，并把它保存成 Markdown 笔记写入 Obsidian。
 
@@ -64,12 +64,17 @@
 
 ## 安装
 
+你可以任选一种方式获取扩展文件：
+
+- 直接下载 GitHub Releases 中提供的 ZIP 压缩包，解压后使用
+- 或者直接 clone / 下载整个仓库目录
+
 ### 1. 加载 Chrome 扩展
 
 1. 打开 `chrome://extensions`
 2. 开启开发者模式
 3. 点击“加载已解压的扩展程序”
-4. 选择这个仓库目录
+4. 选择你解压后的扩展目录
 5. 记下扩展 ID
 
 ### 2. 安装 Native Host
@@ -77,7 +82,7 @@
 先进入这个仓库目录，然后运行：
 
 ```bash
-cd /path/to/bookmark-is-learned
+cd /path/to/x-bookmark-to-obsidian
 ```
 
 运行：

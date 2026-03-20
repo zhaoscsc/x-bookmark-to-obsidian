@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "X 收藏到 Obsidian",
-  "version": "2.0.0",
-  "description": "在 X 收藏帖子后，自动保存到 Obsidian 的待整理区。",
+  "name": "X Bookmark to Obsidian",
+  "version": "2.1.0",
+  "description": "Save bookmarked posts from X directly into Obsidian.",
   "permissions": [
     "storage",
     "nativeMessaging"
@@ -30,7 +30,7 @@
   ],
   "action": {
     "default_popup": "popup.html",
-    "default_title": "X 收藏到 Obsidian"
+    "default_title": "X Bookmark to Obsidian"
   },
   "icons": {
     "16": "icons/icon16.png",
