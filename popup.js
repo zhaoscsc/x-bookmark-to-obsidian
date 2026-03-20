@@ -1,6 +1,15 @@
 document.addEventListener("DOMContentLoaded", async () => {
   const nativeStatusEl = document.getElementById("native-status");
   const lastResultEl = document.getElementById("last-result");
+  const outputDirEl = document.getElementById("output-dir");
+  const saveDirBtn = document.getElementById("save-dir");
+  const pickDirBtn = document.getElementById("pick-dir");
+  const saveDirStatusEl = document.getElementById("save-dir-status");
+
+  const syncState = await chrome.storage.sync.get({
+    obsidianOutputDir: "/Users/zhaoyue/Documents/mywl/1-输入/01-待整理",
+  });
+  outputDirEl.value = syncState.obsidianOutputDir || "";
 
   try {
     const nativeStatus = await sendMessage({ type: "PING_NATIVE_HOST" });
@@ -29,6 +38,34 @@ document.addEventListener("DOMContentLoaded", async () => {
   } catch (_error) {
     lastResultEl.textContent = "最近一次保存：读取状态失败";
   }
+
+  saveDirBtn.addEventListener("click", async () => {
+    const nextPath = outputDirEl.value.trim();
+    if (!isValidAbsolutePath(nextPath)) {
+      saveDirStatusEl.textContent = "请输入绝对路径，或使用“选择文件夹”。";
+      return;
+    }
+    await chrome.storage.sync.set({ obsidianOutputDir: nextPath });
+    saveDirStatusEl.textContent = "保存路径已更新。";
+  });
+
+  pickDirBtn.addEventListener("click", async () => {
+    saveDirStatusEl.textContent = "正在打开文件夹选择器...";
+    try {
+      const result = await sendMessage({ type: "PICK_OUTPUT_DIR" });
+      if (!result?.success || !result.path) {
+        saveDirStatusEl.textContent = result?.error
+          ? "选择失败：" + result.error
+          : "未选择文件夹。";
+        return;
+      }
+      outputDirEl.value = result.path;
+      await chrome.storage.sync.set({ obsidianOutputDir: result.path });
+      saveDirStatusEl.textContent = "保存路径已更新。";
+    } catch (_error) {
+      saveDirStatusEl.textContent = "打开文件夹选择器失败。";
+    }
+  });
 });
 
 function sendMessage(message) {
@@ -41,4 +78,8 @@ function sendMessage(message) {
       resolve(response);
     });
   });
+}
+
+function isValidAbsolutePath(value) {
+  return value.startsWith("/") || value.startsWith("~/");
 }

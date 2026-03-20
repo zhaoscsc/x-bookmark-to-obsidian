@@ -12,8 +12,14 @@
       <p class="subtitle">点击 X 收藏按钮后，帖子会自动进入你的 Obsidian 待整理区。</p>
 
       <section class="card">
-        <h2>默认落点</h2>
-        <p class="mono">/Users/zhaoyue/Documents/mywl/1-输入/01-待整理</p>
+        <h2>保存路径</h2>
+        <label class="field-label" for="output-dir">Obsidian 绝对路径</label>
+        <input id="output-dir" class="text-input mono" type="text" placeholder="/Users/yourname/Documents/your-vault/1-输入/01-待整理" />
+        <div class="button-row">
+          <button id="save-dir" type="button">保存设置</button>
+          <button id="pick-dir" type="button" class="secondary">选择文件夹</button>
+        </div>
+        <p id="save-dir-status" class="helper-text">建议填写到你自己的收件箱目录。</p>
       </section>
 
       <section class="card">

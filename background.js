@@ -1,9 +1,16 @@
 const NATIVE_HOST_NAME = "com.btl.file_writer";
+const DEFAULT_OUTPUT_DIR = "/Users/zhaoyue/Documents/mywl/1-输入/01-待整理";
 
 chrome.runtime.onInstalled.addListener(async () => {
+  const syncState = await chrome.storage.sync.get({
+    obsidianOutputDir: DEFAULT_OUTPUT_DIR,
+  });
   await chrome.storage.local.set({
     extensionMode: "x-bookmark-to-obsidian",
     lastResult: null,
+  });
+  await chrome.storage.sync.set({
+    obsidianOutputDir: syncState.obsidianOutputDir || DEFAULT_OUTPUT_DIR,
   });
 });
 
@@ -34,7 +41,25 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     chrome.storage.local.get({
       lastResult: null,
       extensionMode: "x-bookmark-to-obsidian",
-    }).then((state) => sendResponse({ success: true, state }));
+    }).then(async (state) => {
+      const syncState = await chrome.storage.sync.get({
+        obsidianOutputDir: DEFAULT_OUTPUT_DIR,
+      });
+      sendResponse({
+        success: true,
+        state: {
+          ...state,
+          obsidianOutputDir: syncState.obsidianOutputDir || DEFAULT_OUTPUT_DIR,
+        },
+      });
+    });
+    return true;
+  }
+
+  if (message?.type === "PICK_OUTPUT_DIR") {
+    chrome.runtime.sendNativeMessage(NATIVE_HOST_NAME, { action: "pick_folder" })
+      .then((result) => sendResponse(result))
+      .catch((error) => sendResponse({ success: false, error: error.message }));
     return true;
   }
 });
@@ -42,6 +67,10 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
 async function handleSaveBookmark(payload) {
   const safePayload = sanitizePayload(payload);
   validatePayload(safePayload);
+  const syncState = await chrome.storage.sync.get({
+    obsidianOutputDir: DEFAULT_OUTPUT_DIR,
+  });
+  safePayload.output_dir = syncState.obsidianOutputDir || DEFAULT_OUTPUT_DIR;
 
   const result = await chrome.runtime.sendNativeMessage(NATIVE_HOST_NAME, {
     action: "save_x_bookmark",

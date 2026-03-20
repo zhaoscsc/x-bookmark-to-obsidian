@@ -39,6 +39,50 @@ h1 {
   margin: 0;
 }
 
+.field-label {
+  display: block;
+  margin-bottom: 6px;
+  color: #374151;
+  font-size: 13px;
+}
+
+.text-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border: 1px solid rgba(31, 41, 55, 0.12);
+  border-radius: 10px;
+  background: #fff;
+  color: #111827;
+}
+
+.button-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+button {
+  border: 0;
+  border-radius: 10px;
+  background: #1f2937;
+  color: #fff;
+  padding: 9px 12px;
+  cursor: pointer;
+  font: inherit;
+}
+
+button.secondary {
+  background: #dbe4f0;
+  color: #1f2937;
+}
+
+.helper-text {
+  margin-top: 8px !important;
+  color: #4b5563;
+  font-size: 12px;
+}
+
 .card ol {
   padding-left: 18px;
 }

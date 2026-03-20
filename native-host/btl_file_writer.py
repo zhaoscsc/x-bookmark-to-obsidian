@@ -4,6 +4,7 @@ Native messaging host for the X bookmark -> Obsidian workflow.
 
 Actions:
   - ping: health check
+  - pick_folder: open a folder picker on macOS
   - write_file: write an arbitrary file under the user's home directory
   - save_x_bookmark: fetch a tweet via local x-fetcher and save markdown note
 """
@@ -82,6 +83,34 @@ def validate_path(file_path: str) -> Tuple[Optional[Path], Optional[str]]:
     return resolved, None
 
 
+def validate_directory_path(dir_path: str) -> Tuple[Optional[Path], Optional[str]]:
+    if "\x00" in dir_path:
+        return None, "path contains null byte"
+    expanded = os.path.expanduser(dir_path)
+    if not os.path.isabs(expanded):
+        return None, "output_dir must be an absolute path"
+    resolved = Path(os.path.realpath(expanded))
+    return resolved, None
+
+
+def pick_folder() -> Dict[str, Any]:
+    try:
+        proc = subprocess.run(
+            ["osascript", "-e", 'POSIX path of (choose folder with prompt "选择 Obsidian 保存目录")'],
+            capture_output=True,
+            text=True,
+            timeout=120,
+        )
+        if proc.returncode == 0 and proc.stdout.strip():
+            path = proc.stdout.strip().rstrip("/")
+            return {"success": True, "path": path, "name": os.path.basename(path)}
+        return {"success": False, "error": "cancelled"}
+    except subprocess.TimeoutExpired:
+        return {"success": False, "error": "timeout"}
+    except Exception as exc:
+        return {"success": False, "error": str(exc)}
+
+
 def write_file(file_path: str, content: str, overwrite: bool = False) -> Dict[str, Any]:
     try:
         resolved, err = validate_path(file_path)
@@ -118,11 +147,11 @@ def normalize_url(url: str) -> str:
     return f"https://x.com/{match.group(1)}/status/{match.group(2)}"
 
 
-def detect_existing_note(url: str) -> Optional[Path]:
-    if not DEFAULT_OUTPUT_DIR.exists():
+def detect_existing_note(url: str, output_dir: Path) -> Optional[Path]:
+    if not output_dir.exists():
         return None
     needle = normalize_url(url)
-    for path in DEFAULT_OUTPUT_DIR.glob("*.md"):
+    for path in output_dir.glob("*.md"):
         try:
             text = path.read_text(encoding="utf-8", errors="ignore")
         except Exception:
@@ -321,11 +350,16 @@ def run_x_fetcher(url: str) -> Tuple[Optional[Dict[str, Any]], str]:
 
 def save_x_bookmark(payload: Dict[str, Any]) -> Dict[str, Any]:
     url = normalize_url(str(payload.get("url", "")))
+    output_dir_raw = str(payload.get("output_dir", "") or DEFAULT_OUTPUT_DIR)
+    output_dir, dir_err = validate_directory_path(output_dir_raw)
+    if dir_err:
+        return {"success": False, "error": dir_err}
+    assert output_dir is not None
     log_event("save_requested", url=url, tweet_id=payload.get("tweet_id", ""))
     if not re.match(r"^https://x\.com/[^/]+/status/\d+$", url):
         return {"success": False, "error": "invalid tweet url"}
 
-    existing = detect_existing_note(url)
+    existing = detect_existing_note(url, output_dir)
     if existing:
         log_event("deduped", url=url, path=str(existing))
         return {
@@ -340,7 +374,7 @@ def save_x_bookmark(payload: Dict[str, Any]) -> Dict[str, Any]:
     fetch_data, fetch_error = run_x_fetcher(url)
     markdown, title = build_markdown(fetch_data, payload, fetch_error=fetch_error)
     filename = sanitize_filename(title or payload.get("tweet_id", "x-bookmark"), max_len=80) + ".md"
-    output_path = DEFAULT_OUTPUT_DIR / filename
+    output_path = output_dir / filename
     result = write_file(str(output_path), markdown, overwrite=False)
 
     if not result.get("success"):
@@ -375,11 +409,15 @@ def main() -> None:
 
         if action == "ping":
             send_message({
-                "success": True,
-                "version": "2.0.0",
-                "output_dir": str(DEFAULT_OUTPUT_DIR),
-                "x_fetcher": str(X_FETCHER_PATH),
+        "success": True,
+        "version": "2.0.0",
+        "output_dir": str(DEFAULT_OUTPUT_DIR),
+        "x_fetcher": str(X_FETCHER_PATH),
             })
+            return
+
+        if action == "pick_folder":
+            send_message(pick_folder())
             return
 
         if action == "write_file":
