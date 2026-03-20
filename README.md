@@ -74,10 +74,16 @@
 
 ### 2. 安装 Native Host
 
+先进入这个仓库目录，然后运行：
+
+```bash
+cd /path/to/bookmark-is-learned
+```
+
 运行：
 
 ```bash
-bash /Users/zhaoyue/bookmark-is-learned/native-host/install-macos.sh <扩展ID>
+bash native-host/install-macos.sh <扩展ID>
 ```
 
 这一步会把 Native Messaging Host 注册到 Chrome，让扩展可以调用本机写文件脚本。
@@ -195,6 +201,11 @@ fetch_method: x_bookmark_helper
 - 支持自定义保存绝对路径
 - 支持抓取失败降级和 URL 去重
 
+## Acknowledgements
+
+- 原始项目基础：[iamzifei/bookmark-is-learned](https://github.com/iamzifei/bookmark-is-learned)
+- 感谢原作者提供了可继续改造的扩展基础，让这次工作可以更聚焦在 Obsidian 工作流集成上
+
 ## License
 
-如果你准备公开分发，建议补充许可证文件。
+This project is licensed under the MIT License.
