@@ -97,6 +97,20 @@ bash native-host/install-macos.sh <扩展ID>
 
 重启后，扩展弹窗里应该能看到 Native Host 已连接。
 
+### 4. 如果你重新加载了扩展
+
+如果你删除旧扩展、重新“加载已解压的扩展程序”，Chrome 可能会分配一个新的扩展 ID。
+
+这时即使代码目录没变，Native Host 也可能因为仍绑定旧 ID 而失效。
+
+遇到这种情况，请重新运行一次：
+
+```bash
+bash native-host/install-macos.sh <新的扩展ID>
+```
+
+然后重启 Chrome。
+
 ## 配置保存路径
 
 打开插件弹窗，在“保存路径”区域：
@@ -163,6 +177,7 @@ fetch_method: x_bookmark_helper
 - Chrome 扩展是否已重新加载
 - `install-macos.sh` 是否用当前扩展 ID 运行过
 - Chrome 是否已重启
+- 如果你最近重新导入过扩展，确认当前扩展 ID 是否已经变化
 
 ### 2. 纯文字帖子能保存，图片帖子失败
 
