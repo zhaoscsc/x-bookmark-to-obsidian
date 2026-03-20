@@ -1,190 +1,38 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>X 收藏到 Obsidian</title>
     <link rel="stylesheet" href="popup.css" />
   </head>
   <body>
-    <div class="popup-container">
-      <!-- Header with title and theme toggle -->
-      <div class="popup-header">
-        <h1 class="popup-title">收藏到就是学到</h1>
-        <button id="themeToggle" class="theme-toggle" title="切换主题">
-          <!-- Sun icon for light mode -->
-          <svg class="theme-icon theme-icon-light" width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <circle cx="8" cy="8" r="3.5" stroke="currentColor" stroke-width="1.5"/>
-            <path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.41 1.41M11.54 11.54l1.41 1.41M3.05 12.95l1.41-1.41M11.54 4.46l1.41-1.41" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-          </svg>
-          <!-- Moon icon for dark mode -->
-          <svg class="theme-icon theme-icon-dark" width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <path d="M13.36 10.03A6 6 0 015.97 2.64 6 6 0 1013.36 10.03z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          <!-- Auto icon for system mode -->
-          <svg class="theme-icon theme-icon-auto" width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <rect x="2" y="3" width="12" height="9" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
-            <path d="M5 14h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-          </svg>
-        </button>
-      </div>
+    <main class="popup">
+      <h1>X 收藏到 Obsidian</h1>
+      <p class="subtitle">点击 X 收藏按钮后，帖子会自动进入你的 Obsidian 待整理区。</p>
 
-      <!-- Tab navigation -->
-      <div class="tab-bar">
-        <button class="tab-btn active" data-tab="settings">设置</button>
-        <button class="tab-btn" data-tab="history">历史记录</button>
-      </div>
+      <section class="card">
+        <h2>默认落点</h2>
+        <p class="mono">/Users/zhaoyue/Documents/mywl/1-输入/01-待整理</p>
+      </section>
 
-      <!-- Settings tab -->
-      <div class="tab-panel active" id="tab-settings">
+      <section class="card">
+        <h2>运行状态</h2>
+        <p id="native-status">正在检查 Native Host...</p>
+        <p id="last-result">最近一次保存：暂无记录</p>
+      </section>
 
-        <!-- Section 1: AI Service Configuration -->
-        <div class="settings-card">
-          <div class="settings-card-header">AI 服务配置</div>
+      <section class="card">
+        <h2>安装提醒</h2>
+        <ol>
+          <li>在 <span class="mono">chrome://extensions</span> 打开开发者模式。</li>
+          <li>加载这个扩展目录。</li>
+          <li>运行 <span class="mono">native-host/install-macos.sh &lt;扩展ID&gt;</span>。</li>
+          <li>重启 Chrome。</li>
+        </ol>
+      </section>
+    </main>
 
-          <!-- 2-column row: provider + language -->
-          <div class="form-row-2col">
-            <div class="form-group">
-              <label for="provider">AI 模型</label>
-              <select id="provider">
-                <option value="openai">OpenAI (GPT)</option>
-                <option value="claude">Claude (Anthropic)</option>
-                <option value="kimi">Kimi (月之暗面)</option>
-                <option value="zhipu">智谱 (GLM)</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label for="language">摘要语言</label>
-              <select id="language">
-                <option value="zh-CN">简体中文</option>
-                <option value="zh-TW">繁體中文</option>
-                <option value="en">English</option>
-                <option value="ja">日本語</option>
-                <option value="ko">한국어</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label for="apiKey">API Key</label>
-            <div class="input-wrapper">
-              <input type="password" id="apiKey" placeholder="输入你的 API Key" />
-              <button id="toggleKey" class="toggle-btn" title="显示/隐藏">
-                <svg class="eye-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path d="M1 8s2.5-5 7-5 7 5 7 5-2.5 5-7 5-7-5-7-5z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                  <circle cx="8" cy="8" r="2" stroke="currentColor" stroke-width="1.5"/>
-                </svg>
-              </button>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label for="model">模型版本 <span class="optional">(可选)</span></label>
-            <input type="text" id="model" placeholder="留空使用默认模型" />
-            <div class="hint" id="modelHint">默认: gpt-4o-mini</div>
-          </div>
-
-          <div class="form-group">
-            <label for="baseUrl">Base URL <span class="optional">(可选)</span></label>
-            <input type="text" id="baseUrl" placeholder="例如 https://your-proxy.com/v1" />
-            <div class="hint">留空使用官方 API 地址，填写后走自定义中转地址</div>
-          </div>
-        </div>
-
-        <!-- Section 2: File Saving Options -->
-        <div class="settings-card">
-          <div class="settings-card-header">文件保存</div>
-
-          <div class="form-group">
-            <label for="mdMode">保存模式</label>
-            <select id="mdMode">
-              <option value="tldr">TLDR 摘要模式</option>
-              <option value="original">原文模式</option>
-            </select>
-            <div class="hint" id="mdModeHint">TLDR 模式生成 AI 摘要，原文模式保存完整原文</div>
-          </div>
-
-          <div class="form-group checkbox-group">
-            <label class="checkbox-label">
-              <input type="checkbox" id="autoDownloadMd" checked />
-              <span>自动下载 Markdown 文件</span>
-            </label>
-            <div class="hint">收藏时自动保存 .md 文件到本地</div>
-          </div>
-
-          <div class="form-group" id="savePathGroup">
-            <label>保存路径 <span class="optional">(可选)</span></label>
-            <div class="folder-picker-row">
-              <button id="pickFolderBtn" class="pick-folder-btn" type="button">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path d="M1.5 3.5a1 1 0 011-1h3.586a1 1 0 01.707.293L8.207 4.207A1 1 0 008.914 4.5H13.5a1 1 0 011 1v7a1 1 0 01-1 1h-12a1 1 0 01-1-1v-9z"
-                        stroke="currentColor" stroke-width="1.3" fill="none"/>
-                </svg>
-                <span>选择文件夹</span>
-              </button>
-              <div class="folder-display">
-                <span id="folderPath" class="folder-path">未选择</span>
-                <button id="clearFolderBtn" class="clear-folder-btn" type="button" title="清除选择" style="display:none;">&times;</button>
-              </div>
-            </div>
-            <div class="hint" id="savePathHint">未选择文件夹，保存到下载目录 bookmark-is-learned 子文件夹</div>
-
-            <div id="nativeSetup" class="native-setup">
-              <div id="nativeSetupText" class="native-setup-text"></div>
-              <button id="nativeSetupBtn" class="native-setup-btn" type="button">下载安装脚本</button>
-              <div id="nativeSetupStep2" class="native-setup-step2" style="display:none;">
-                <p>在终端运行:</p>
-                <code class="install-cmd">bash ~/Downloads/install-btl-native.sh</code>
-                <p>运行后重启浏览器，即可使用「选择文件夹」功能</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Debug info (collapsible) -->
-        <details class="settings-section" id="debugSection">
-          <summary class="section-summary">
-            <svg class="section-arrow" width="12" height="12" viewBox="0 0 12 12" fill="none">
-              <path d="M4 2l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            调试信息
-          </summary>
-          <div class="section-content">
-            <div id="debugInfo" class="debug-info">
-              <div class="debug-loading">加载中...</div>
-            </div>
-            <button id="copyDebugBtn" class="copy-debug-btn" type="button">复制调试信息</button>
-          </div>
-        </details>
-
-        <!-- Save button + status at the bottom of all settings -->
-        <button id="saveBtn" class="save-btn">保存设置</button>
-        <div id="status" class="status"></div>
-
-        <!-- Footer: version + repo link + update badge -->
-        <div class="popup-footer">
-          <a id="repoLink" class="footer-repo-link" href="https://github.com/iamzifei/bookmark-is-learned" target="_blank" rel="noopener" title="GitHub">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M8 .5A7.5 7.5 0 00.5 8a7.5 7.5 0 005.13 7.12c.37.07.51-.16.51-.36v-1.24c-2.09.45-2.53-1.01-2.53-1.01-.34-.87-.83-1.1-.83-1.1-.68-.47.05-.46.05-.46.75.05 1.15.78 1.15.78.67 1.15 1.76.82 2.19.63.07-.49.26-.82.48-1.01-1.67-.19-3.43-.84-3.43-3.73 0-.82.29-1.5.78-2.03-.08-.19-.34-.96.07-2 0 0 .63-.2 2.08.78a7.26 7.26 0 013.8 0c1.44-.98 2.08-.78 2.08-.78.41 1.04.15 1.81.07 2 .48.53.78 1.2.78 2.03 0 2.9-1.76 3.54-3.44 3.73.27.23.51.7.51 1.4v2.08c0 .2.14.43.51.36A7.5 7.5 0 0015.5 8 7.5 7.5 0 008 .5z" fill="currentColor"/>
-            </svg>
-          </a>
-          <span id="versionLabel" class="footer-version"></span>
-          <a id="updateBadge" class="footer-update-badge" href="https://github.com/iamzifei/bookmark-is-learned/releases/latest" target="_blank" rel="noopener" style="display:none;">
-            新版本可用
-          </a>
-        </div>
-
-      </div>
-
-      <!-- History tab -->
-      <div class="tab-panel" id="tab-history">
-        <div id="historyList" class="history-list"></div>
-        <div id="historyEmpty" class="history-empty" style="display:none;">
-          还没有收藏记录
-        </div>
-        <button id="clearHistoryBtn" class="clear-history-btn" style="display:none;">
-          清空历史记录
-        </button>
-      </div>
-    </div>
     <script src="popup.js"></script>
   </body>
 </html>

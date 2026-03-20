@@ -1,22 +1,15 @@
 {
   "manifest_version": 3,
-  "name": "收藏到就是学到",
-  "version": "1.0.0",
-  "description": "自动总结你在 X 上收藏的内容，让每次收藏都变成学习",
+  "name": "X 收藏到 Obsidian",
+  "version": "2.0.0",
+  "description": "在 X 收藏帖子后，自动保存到 Obsidian 的待整理区。",
   "permissions": [
     "storage",
-    "scripting",
-    "downloads",
     "nativeMessaging"
   ],
   "host_permissions": [
     "https://x.com/*",
-    "https://twitter.com/*",
-    "https://api.openai.com/*",
-    "https://api.anthropic.com/*",
-    "https://api.moonshot.cn/*",
-    "https://open.bigmodel.cn/*",
-    "https://api.github.com/*"
+    "https://twitter.com/*"
   ],
   "background": {
     "service_worker": "background.js"
@@ -37,17 +30,13 @@
   ],
   "action": {
     "default_popup": "popup.html",
-    "default_title": "收藏到就是学到 - 设置"
+    "default_title": "X 收藏到 Obsidian"
   },
   "icons": {
     "16": "icons/icon16.png",
     "48": "icons/icon48.png",
     "128": "icons/icon128.png"
   },
-  "optional_host_permissions": [
-    "http://*/*",
-    "https://*/*"
-  ],
   "web_accessible_resources": [
     {
       "resources": ["icons/icon48.png"],

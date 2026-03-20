@@ -1,5 +1,5 @@
 #!/bin/bash
-# Install native messaging host for "收藏到就是学到" Chrome extension (macOS).
+# Install native messaging host for "X 收藏到 Obsidian" Chrome extension (macOS).
 #
 # Usage:
 #   ./install-macos.sh <extension-id>
@@ -18,7 +18,7 @@ if [ -z "$1" ]; then
     echo "获取扩展 ID:"
     echo "  1. 打开 chrome://extensions"
     echo "  2. 开启「开发者模式」"
-    echo "  3. 找到「收藏到就是学到」，复制 ID"
+    echo "  3. 找到「X 收藏到 Obsidian」，复制 ID"
     exit 1
 fi
 
@@ -45,7 +45,7 @@ for dir in "${BROWSER_DIRS[@]}"; do
         cat > "$dir/$HOST_NAME.json" << MANIFEST
 {
   "name": "$HOST_NAME",
-  "description": "File writer for 收藏到就是学到 Chrome extension",
+  "description": "Native host for X 收藏到 Obsidian Chrome extension",
   "path": "$HOST_PATH",
   "type": "stdio",
   "allowed_origins": ["chrome-extension://$EXT_ID/"]
