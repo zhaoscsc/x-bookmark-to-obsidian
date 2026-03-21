@@ -4,6 +4,23 @@ A Chrome extension + bundled macOS installer for saving X bookmarks into Obsidia
 
 你在 `x.com` 点击收藏后，插件会自动抓取帖子内容，并把它保存成 Markdown 笔记写入 Obsidian。
 
+## 3 分钟安装完成
+
+如果你只想先装起来，不想先看完整说明，按这 4 步就够了：
+
+1. 从 Release 下载 `x-bookmark-to-obsidian-extension.zip` 和 `x-bookmark-to-obsidian-installer.zip`
+2. 解压 `extension.zip`，去 `chrome://extensions` 开启开发者模式，然后“加载已解压的扩展程序”
+3. 解压 `installer.zip`，运行 `install.command`
+4. 重启 Chrome，打开扩展弹窗，选择你的 Obsidian 保存目录
+
+如果 macOS 拦截 `install.command`：
+
+- 先不要点“移到废纸篓”
+- 去 `系统设置 -> 隐私与安全性` 放行
+- 或在 Finder 里右键 `install.command`，选择“打开”
+
+如果你想让 `Claude Code` 或 `Codex` 帮你装，可以直接看后面的“让 AI 帮你安装”一节。
+
 这个仓库适合想要实现下面这类工作流的人：
 
 - 在 X 上看到值得留存的内容，顺手点收藏
