@@ -77,6 +77,32 @@ A Chrome extension + bundled macOS installer for saving X bookmarks into Obsidia
 
 - `x-bookmark-to-obsidian-installer.zip`
 
+## 让 AI 帮你安装
+
+如果你使用的是 `Claude Code`、`Codex` 这类可以在你本机执行命令的 AI 代理，也可以把这个仓库链接直接发给它，让它帮你完成大部分安装流程。
+
+建议直接把下面这段话发给 AI：
+
+```text
+请帮我在这台 Mac 上安装这个 Chrome 扩展：
+https://github.com/zhaoscsc/x-bookmark-to-obsidian
+
+请按这个顺序执行：
+1. 克隆或下载仓库
+2. 运行 install.command
+3. 检查 Native Host 是否安装成功
+4. 告诉我在 Chrome 里如何加载已解压扩展
+5. 引导我在扩展弹窗里设置 Obsidian 保存路径
+6. 最后验证扩展是否已经可用
+
+如果某一步需要我手动点击，请明确告诉我该点哪里。
+不要修改我的其他目录或系统设置。
+```
+
+更适合 AI 执行的详细步骤说明见：
+
+- [INSTALL_FOR_AI.md](./INSTALL_FOR_AI.md)
+
 ### 1. 加载 Chrome 扩展
 
 1. 打开 `chrome://extensions`
@@ -91,6 +117,25 @@ A Chrome extension + bundled macOS installer for saving X bookmarks into Obsidia
 ```bash
 install.command
 ```
+
+如果 macOS 弹出“无法打开”或“建议移到废纸篓”这类提示，不用慌，这通常是因为安装器还没有经过 Apple 签名和公证，不代表它一定有问题。
+
+推荐按这个顺序处理：
+
+1. 不要点“移到废纸篓”
+2. 打开 `系统设置 -> 隐私与安全性`
+3. 在页面下方找到刚刚被拦截的 `install.command`
+4. 点击“仍要打开”或同类放行按钮
+5. 再回到 Finder 重新打开一次
+
+如果你更习惯 Finder 的右键菜单，也可以尝试：
+
+1. 在 Finder 中找到 `install.command`
+2. 右键点击它
+3. 选择“打开”
+4. 在弹窗里再次点击“打开”
+
+这两种方式都比“移到废纸篓”更适合当前版本。
 
 这一步会自动完成：
 
@@ -175,6 +220,17 @@ fetch_method: x_bookmark_helper
 - 是否已经运行过 `install.command`
 - Chrome 是否已重启
 - 如果之前装过旧版本，尝试重新运行一次安装器
+
+### 1.1 双击 `install.command` 时被 macOS 拦截
+
+这是当前版本最常见的安装摩擦点。
+
+你可以优先这样处理：
+
+- 去 `系统设置 -> 隐私与安全性` 中放行刚刚被拦截的 `install.command`
+- 或在 Finder 中右键 `install.command`，选择“打开”
+
+如果你看到“移到废纸篓”，先不要这么做。当前更合适的做法是先放行，再重新打开。
 
 ### 2. 纯文字帖子能保存，图片帖子失败
 
