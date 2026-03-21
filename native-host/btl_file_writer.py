@@ -27,7 +27,7 @@ HOME = Path.home()
 DEFAULT_OUTPUT_DIR = ""
 LOG_DIR = HOME / "Library" / "Logs" / "x-bookmark-to-obsidian"
 LOG_FILE = LOG_DIR / "native-host.log"
-X_FETCHER_PATH = HOME / ".agents" / "skills" / "x-fetcher" / "scripts" / "fetch_tweet.py"
+X_FETCHER_PATH = Path(__file__).with_name("fetch_tweet.py")
 MAX_MESSAGE_BYTES = 1024 * 1024
 
 
@@ -412,7 +412,7 @@ def main() -> None:
         if action == "ping":
             send_message({
                 "success": True,
-                "version": "2.0.0",
+                "version": "2.2.0",
                 "output_dir": DEFAULT_OUTPUT_DIR,
                 "x_fetcher": str(X_FETCHER_PATH),
             })

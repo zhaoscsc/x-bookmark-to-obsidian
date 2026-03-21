@@ -1,6 +1,6 @@
 # X Bookmark to Obsidian
 
-A Chrome extension + Native Host workflow for saving X bookmarks into Obsidian.
+A Chrome extension + bundled macOS installer for saving X bookmarks into Obsidian.
 
 你在 `x.com` 点击收藏后，插件会自动抓取帖子内容，并把它保存成 Markdown 笔记写入 Obsidian。
 
@@ -27,7 +27,7 @@ A Chrome extension + Native Host workflow for saving X bookmarks into Obsidian.
 
 - 把主流程改成“X 收藏即保存到 Obsidian”
 - 引入基于 Native Host 的本地落盘链路
-- 接入本机 `x-fetcher` 作为正文抓取能力
+- 将单帖抓取能力内置进发行包
 - 增加抓取失败时的占位笔记降级
 - 增加按 `url:` 去重
 - 增加自定义 Obsidian 绝对路径设置
@@ -39,7 +39,7 @@ A Chrome extension + Native Host workflow for saving X bookmarks into Obsidian.
 ## 功能概览
 
 - 监听 `x.com` 上的收藏动作，只在确认收藏成功后触发保存
-- 优先调用本机 `x-fetcher` 抓取帖子正文
+- 使用发行包内置的抓取脚本获取帖子正文
 - 抓取失败时自动降级为占位笔记，避免收藏动作丢失
 - 支持图片和视频封面链接写入 Markdown
 - 通过 `url:` 字段去重，避免重复创建同一条帖子笔记
@@ -50,7 +50,7 @@ A Chrome extension + Native Host workflow for saving X bookmarks into Obsidian.
 1. 你在 X 上点击收藏。
 2. `content.js` 检测按钮状态已经变成“已收藏”。
 3. `background.js` 提取帖子 URL 和最小页面信息，并转发给 Native Host。
-4. Native Host 调用本机 `x-fetcher` 抓取完整内容。
+4. Native Host 调用发行包内置抓取脚本获取完整内容。
 5. 成功时生成完整 Markdown；失败时生成包含原帖链接的降级笔记。
 6. 写入你配置好的 Obsidian 目录，并根据 `url:` 做去重。
 
@@ -59,15 +59,23 @@ A Chrome extension + Native Host workflow for saving X bookmarks into Obsidian.
 - macOS
 - Chrome 浏览器
 - 本机已安装 Python 3
-- 能正常运行本地 `x-fetcher`
 - 已有一个 Obsidian vault，并且你知道要保存到哪个绝对路径
 
 ## 安装
 
-你可以任选一种方式获取扩展文件：
+最简单的使用方式是从 GitHub Release 下载：
 
-- 直接下载 GitHub Releases 中提供的 ZIP 压缩包，解压后使用
-- 或者直接 clone / 下载整个仓库目录
+- `x-bookmark-to-obsidian-extension.zip`
+
+这个压缩包里已经包含：
+
+- 浏览器扩展目录
+- `install.command`
+- `native-host` 运行时文件
+
+如果你只想单独分发安装器，也可以额外使用：
+
+- `x-bookmark-to-obsidian-installer.zip`
 
 ### 1. 加载 Chrome 扩展
 
@@ -75,41 +83,30 @@ A Chrome extension + Native Host workflow for saving X bookmarks into Obsidian.
 2. 开启开发者模式
 3. 点击“加载已解压的扩展程序”
 4. 选择你解压后的扩展目录
-5. 记下扩展 ID
 
-### 2. 安装 Native Host
+### 2. 运行安装器
 
-先进入这个仓库目录，然后运行：
-
-```bash
-cd /path/to/x-bookmark-to-obsidian
-```
-
-运行：
+解压后，直接双击：
 
 ```bash
-bash native-host/install-macos.sh <扩展ID>
+install.command
 ```
 
-这一步会把 Native Messaging Host 注册到 Chrome，让扩展可以调用本机写文件脚本。
+这一步会自动完成：
+
+- 安装本机 Native Host
+- 安装内置抓取运行时
+- 写入 Chrome 所需的 host manifest
 
 ### 3. 重启 Chrome
 
 重启后，扩展弹窗里应该能看到 Native Host 已连接。
 
-### 4. 如果你重新加载了扩展
+### 4. 重新加载扩展时
 
-如果你删除旧扩展、重新“加载已解压的扩展程序”，Chrome 可能会分配一个新的扩展 ID。
+这个项目使用固定扩展 ID，因此重新“加载已解压的扩展程序”后，不需要再去复制新的扩展 ID。
 
-这时即使代码目录没变，Native Host 也可能因为仍绑定旧 ID 而失效。
-
-遇到这种情况，请重新运行一次：
-
-```bash
-bash native-host/install-macos.sh <新的扩展ID>
-```
-
-然后重启 Chrome。
+如果你怀疑本机安装状态失效，直接重新运行一次 `install.command` 即可。
 
 ## 配置保存路径
 
@@ -175,9 +172,9 @@ fetch_method: x_bookmark_helper
 检查：
 
 - Chrome 扩展是否已重新加载
-- `install-macos.sh` 是否用当前扩展 ID 运行过
+- 是否已经运行过 `install.command`
 - Chrome 是否已重启
-- 如果你最近重新导入过扩展，确认当前扩展 ID 是否已经变化
+- 如果之前装过旧版本，尝试重新运行一次安装器
 
 ### 2. 纯文字帖子能保存，图片帖子失败
 
@@ -211,15 +208,18 @@ fetch_method: x_bookmark_helper
 - 当前不处理“取消收藏后删除笔记”
 - 目前主要针对 macOS + Chrome 工作流
 - 不直接调用 Obsidian Web Clipper 内部接口
+- 当前仍需要本机安装器，不支持“只加载扩展 ZIP 就完整可用”
 
 ## 版本说明
 
-`v1.0.0` 的核心能力：
+`v2.2.0` 的核心能力：
 
 - 点收藏即自动保存到 Obsidian
 - 支持带图片的帖子
 - 支持自定义保存绝对路径
 - 支持抓取失败降级和 URL 去重
+- 使用固定扩展 ID，免去手动复制扩展 ID
+- 使用内置抓取脚本，不依赖外部 `~/.agents` 环境
 
 ## Acknowledgements
 

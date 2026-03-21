@@ -1,65 +1,45 @@
 #!/bin/bash
-# Install native messaging host for "X Bookmark to Obsidian" Chrome extension (macOS).
-#
-# Usage:
-#   ./install-macos.sh <extension-id>
-#
-# The extension ID is visible at chrome://extensions (enable Developer Mode).
+# Install bundled native host runtime for X Bookmark to Obsidian on macOS.
 
-set -e
+set -euo pipefail
 
+APP_NAME="x-bookmark-to-obsidian"
 HOST_NAME="com.btl.file_writer"
+EXTENSION_ID="bbldbbppbbfjepkhjadlpomoiajmngdk"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-HOST_PATH="$SCRIPT_DIR/btl_file_writer.py"
+RUNTIME_DIR="$HOME/Library/Application Support/$APP_NAME/native-host"
+HOST_PATH="$RUNTIME_DIR/btl_file_writer.py"
+FETCHER_PATH="$RUNTIME_DIR/fetch_tweet.py"
+MANIFEST_DIR="$HOME/Library/Application Support/Google/Chrome/NativeMessagingHosts"
 
-if [ -z "$1" ]; then
-    echo "用法: ./install-macos.sh <扩展ID>"
-    echo ""
-    echo "获取扩展 ID:"
-    echo "  1. 打开 chrome://extensions"
-    echo "  2. 开启「开发者模式」"
-    echo "  3. 找到「X Bookmark to Obsidian」，复制 ID"
+if ! command -v python3 >/dev/null 2>&1; then
+    echo "未检测到 python3，请先安装 Python 3 后再运行安装器。"
     exit 1
 fi
 
-EXT_ID="$1"
+mkdir -p "$RUNTIME_DIR"
+cp "$SCRIPT_DIR/btl_file_writer.py" "$HOST_PATH"
+cp "$SCRIPT_DIR/fetch_tweet.py" "$FETCHER_PATH"
+chmod +x "$HOST_PATH" "$FETCHER_PATH"
 
-# Make the host script executable
-chmod +x "$HOST_PATH"
-
-# Install to all detected Chromium-based browser NativeMessagingHosts directories
-BROWSER_DIRS=(
-    "$HOME/Library/Application Support/Google/Chrome/NativeMessagingHosts"
-    "$HOME/Library/Application Support/Google/Chrome Beta/NativeMessagingHosts"
-    "$HOME/Library/Application Support/Google/Chrome Canary/NativeMessagingHosts"
-    "$HOME/Library/Application Support/Chromium/NativeMessagingHosts"
-    "$HOME/Library/Application Support/BraveSoftware/Brave-Browser/NativeMessagingHosts"
-    "$HOME/Library/Application Support/Microsoft Edge/NativeMessagingHosts"
-)
-
-count=0
-for dir in "${BROWSER_DIRS[@]}"; do
-    parent="$(dirname "$dir")"
-    if [ -d "$parent" ]; then
-        mkdir -p "$dir"
-        cat > "$dir/$HOST_NAME.json" << MANIFEST
+mkdir -p "$MANIFEST_DIR"
+cat > "$MANIFEST_DIR/$HOST_NAME.json" <<MANIFEST
 {
   "name": "$HOST_NAME",
   "description": "Native host for X Bookmark to Obsidian Chrome extension",
   "path": "$HOST_PATH",
   "type": "stdio",
-  "allowed_origins": ["chrome-extension://$EXT_ID/"]
+  "allowed_origins": ["chrome-extension://$EXTENSION_ID/"]
 }
 MANIFEST
-        echo "Installed: $dir/$HOST_NAME.json"
-        count=$((count + 1))
-    fi
-done
 
-if [ "$count" -eq 0 ]; then
-    echo "No Chromium browser detected. Please install Chrome first."
-    exit 1
-fi
-
+echo "Installed runtime:"
+echo "  $RUNTIME_DIR"
 echo ""
-echo "Done! Restart your browser for the changes to take effect."
+echo "Installed native host manifest:"
+echo "  $MANIFEST_DIR/$HOST_NAME.json"
+echo ""
+echo "Fixed extension ID:"
+echo "  $EXTENSION_ID"
+echo ""
+echo "Done! Restart Chrome for the changes to take effect."

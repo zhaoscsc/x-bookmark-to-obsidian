@@ -1,5 +1,6 @@
 const NATIVE_HOST_NAME = "com.btl.file_writer";
 const DEFAULT_OUTPUT_DIR = "";
+const INSTALL_HINT = "未完成本机安装，请先运行 install.command 后重试";
 
 chrome.runtime.onInstalled.addListener(async () => {
   const syncState = await chrome.storage.sync.get({
@@ -33,7 +34,7 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   if (message?.type === "PING_NATIVE_HOST") {
     chrome.runtime.sendNativeMessage(NATIVE_HOST_NAME, { action: "ping" })
       .then((result) => sendResponse(result))
-      .catch((error) => sendResponse({ success: false, error: error.message }));
+      .catch((error) => sendResponse({ success: false, error: mapNativeHostError(error) }));
     return true;
   }
 
@@ -59,7 +60,7 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   if (message?.type === "PICK_OUTPUT_DIR") {
     chrome.runtime.sendNativeMessage(NATIVE_HOST_NAME, { action: "pick_folder" })
       .then((result) => sendResponse(result))
-      .catch((error) => sendResponse({ success: false, error: error.message }));
+      .catch((error) => sendResponse({ success: false, error: mapNativeHostError(error) }));
     return true;
   }
 });
@@ -76,13 +77,18 @@ async function handleSaveBookmark(payload) {
     throw new Error("请先在插件弹窗中设置 Obsidian 保存路径");
   }
 
-  const result = await chrome.runtime.sendNativeMessage(NATIVE_HOST_NAME, {
-    action: "save_x_bookmark",
-    payload: safePayload,
-  });
+  let result;
+  try {
+    result = await chrome.runtime.sendNativeMessage(NATIVE_HOST_NAME, {
+      action: "save_x_bookmark",
+      payload: safePayload,
+    });
+  } catch (error) {
+    throw new Error(mapNativeHostError(error));
+  }
 
   if (!result?.success) {
-    throw new Error(result?.error || "native host failed");
+    throw new Error(result?.error || INSTALL_HINT);
   }
 
   const persisted = {
@@ -130,4 +136,16 @@ function sanitizePayload(payload) {
       replies: String(metrics.replies || ""),
     },
   };
+}
+
+function mapNativeHostError(error) {
+  const message = String(error?.message || error || "");
+  if (
+    message.includes("Specified native messaging host not found") ||
+    message.includes("Native host has exited") ||
+    message.includes("Access to the specified native messaging host is forbidden")
+  ) {
+    return INSTALL_HINT;
+  }
+  return message || INSTALL_HINT;
 }
