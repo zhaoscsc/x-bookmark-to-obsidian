@@ -46,6 +46,10 @@ h1 {
   font-size: 13px;
 }
 
+.field-label-spaced {
+  margin-top: 12px;
+}
+
 .text-input {
   width: 100%;
   box-sizing: border-box;

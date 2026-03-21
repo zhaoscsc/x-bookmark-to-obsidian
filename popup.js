@@ -4,14 +4,17 @@ document.addEventListener("DOMContentLoaded", async () => {
   const nativeStatusEl = document.getElementById("native-status");
   const lastResultEl = document.getElementById("last-result");
   const outputDirEl = document.getElementById("output-dir");
+  const imageWidthEl = document.getElementById("image-width");
   const saveDirBtn = document.getElementById("save-dir");
   const pickDirBtn = document.getElementById("pick-dir");
   const saveDirStatusEl = document.getElementById("save-dir-status");
 
   const syncState = await chrome.storage.sync.get({
     obsidianOutputDir: DEFAULT_OUTPUT_DIR,
+    imageDisplayWidth: "",
   });
   outputDirEl.value = syncState.obsidianOutputDir || "";
+  imageWidthEl.value = syncState.imageDisplayWidth || "";
 
   try {
     const nativeStatus = await sendMessage({ type: "PING_NATIVE_HOST" });
@@ -42,12 +45,22 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   saveDirBtn.addEventListener("click", async () => {
     const nextPath = outputDirEl.value.trim();
+    const nextWidth = imageWidthEl.value.trim();
     if (!isValidAbsolutePath(nextPath)) {
       saveDirStatusEl.textContent = "请输入绝对路径，或使用“选择文件夹”。";
       return;
     }
-    await chrome.storage.sync.set({ obsidianOutputDir: nextPath });
-    saveDirStatusEl.textContent = "保存路径已更新。";
+    if (!isValidImageWidth(nextWidth)) {
+      saveDirStatusEl.textContent = "图片显示宽度只能留空，或填写正整数。";
+      return;
+    }
+    await chrome.storage.sync.set({
+      obsidianOutputDir: nextPath,
+      imageDisplayWidth: nextWidth,
+    });
+    saveDirStatusEl.textContent = nextWidth
+      ? "保存路径和图片显示宽度已更新。"
+      : "保存路径已更新，图片将使用默认大小。";
   });
 
   pickDirBtn.addEventListener("click", async () => {
@@ -61,8 +74,18 @@ document.addEventListener("DOMContentLoaded", async () => {
         return;
       }
       outputDirEl.value = result.path;
-      await chrome.storage.sync.set({ obsidianOutputDir: result.path });
-      saveDirStatusEl.textContent = "保存路径已更新。";
+      const nextWidth = imageWidthEl.value.trim();
+      if (!isValidImageWidth(nextWidth)) {
+        saveDirStatusEl.textContent = "图片显示宽度只能留空，或填写正整数。";
+        return;
+      }
+      await chrome.storage.sync.set({
+        obsidianOutputDir: result.path,
+        imageDisplayWidth: nextWidth,
+      });
+      saveDirStatusEl.textContent = nextWidth
+        ? "保存路径和图片显示宽度已更新。"
+        : "保存路径已更新，图片将使用默认大小。";
     } catch (_error) {
       saveDirStatusEl.textContent = "打开文件夹选择器失败。";
     }
@@ -83,4 +106,11 @@ function sendMessage(message) {
 
 function isValidAbsolutePath(value) {
   return value.startsWith("/") || value.startsWith("~/");
+}
+
+function isValidImageWidth(value) {
+  if (!value) {
+    return true;
+  }
+  return /^[1-9]\d*$/.test(value);
 }

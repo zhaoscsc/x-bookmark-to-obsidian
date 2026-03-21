@@ -15,11 +15,13 @@
         <h2>保存路径</h2>
         <label class="field-label" for="output-dir">Obsidian 绝对路径</label>
         <input id="output-dir" class="text-input mono" type="text" placeholder="/Users/yourname/Documents/your-vault/1-输入/01-待整理" />
+        <label class="field-label field-label-spaced" for="image-width">图片显示宽度（可选）</label>
+        <input id="image-width" class="text-input mono" type="text" inputmode="numeric" placeholder="例如 400，留空则使用默认大小" />
         <div class="button-row">
           <button id="save-dir" type="button">保存设置</button>
           <button id="pick-dir" type="button" class="secondary">选择文件夹</button>
         </div>
-        <p id="save-dir-status" class="helper-text">建议填写到你自己的收件箱目录。</p>
+        <p id="save-dir-status" class="helper-text">建议填写到你自己的收件箱目录。图片宽度留空时，仍按默认大小保存。</p>
       </section>
 
       <section class="card">
