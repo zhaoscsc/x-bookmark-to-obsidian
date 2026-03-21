@@ -206,18 +206,16 @@ install.command
 
 ```yaml
 ---
-aliases: []
-tags: []
-up:
 url: https://x.com/user/status/123
 author: [作者名 @handle]
 published: 2026-03-20
-source: X (Twitter)
-fetch_method: x_bookmark_helper
-创建时间: 2026-03-20
-修改时间: 2026-03-20
 ---
 ```
+
+说明：
+
+- frontmatter 只保留有值字段
+- 如果某条帖子缺少作者或发布时间，对应字段会直接省略
 
 ## 使用方式
 

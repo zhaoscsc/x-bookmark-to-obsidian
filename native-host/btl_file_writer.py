@@ -208,7 +208,7 @@ def build_markdown(fetch_data: Optional[Dict[str, Any]], payload: Dict[str, Any]
     title = build_title(fetch_data, payload)
 
     if fetch_data and not fetch_error:
-        published, modified = parse_created_date(tweet.get("created_at", ""))
+        published, _modified = parse_created_date(tweet.get("created_at", ""))
         author_name = tweet.get("author") or payload.get("author_name", "")
         handle = tweet.get("screen_name") or fetch_data.get("username") or payload.get("author_handle", "")
         text = tweet.get("article", {}).get("full_text") or tweet.get("text") or payload.get("text") or ""
@@ -221,8 +221,7 @@ def build_markdown(fetch_data: Optional[Dict[str, Any]], payload: Dict[str, Any]
         }
         media_lines = extract_media_lines(tweet.get("media", []) or [])
     else:
-        published = payload.get("published_at", "")[:10] or today
-        modified = today
+        published = payload.get("published_at", "")[:10]
         author_name = payload.get("author_name", "")
         handle = payload.get("author_handle", "")
         text = payload.get("text", "") or "抓取失败，先保留原始链接。"
@@ -235,20 +234,17 @@ def build_markdown(fetch_data: Optional[Dict[str, Any]], payload: Dict[str, Any]
         media_lines = []
 
     info_parts = [f"{k} {v}" for k, v in metrics.items() if v not in (None, "", "0")]
+    author_value = format_author(author_name, handle)
+
+    frontmatter_lines = ["---", f"url: {normalized_url}"]
+    if author_value != "[]":
+        frontmatter_lines.append(f"author: {author_value}")
+    if published:
+        frontmatter_lines.append(f"published: {published}")
+    frontmatter_lines.append("---")
 
     lines = [
-        "---",
-        "aliases: []",
-        "tags: []",
-        "up:",
-        f"url: {normalized_url}",
-        f"author: {format_author(author_name, handle)}",
-        f"published: {published}",
-        "source: X (Twitter)",
-        "fetch_method: x_bookmark_helper",
-        f"创建时间: {today}",
-        f"修改时间: {modified}",
-        "---",
+        *frontmatter_lines,
         f"# {title}",
         "",
         "> [!INFO] 帖子信息",
