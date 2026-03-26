@@ -206,10 +206,9 @@ def build_markdown(fetch_data: Optional[Dict[str, Any]], payload: Dict[str, Any]
     normalized_url = normalize_url(payload.get("url", ""))
     tweet = (fetch_data or {}).get("tweet", {})
     title = build_title(fetch_data, payload)
-    image_width = normalize_image_width(payload.get("image_display_width", ""))
 
     if fetch_data and not fetch_error:
-        published, _modified = parse_created_date(tweet.get("created_at", ""))
+        published, modified = parse_created_date(tweet.get("created_at", ""))
         author_name = tweet.get("author") or payload.get("author_name", "")
         handle = tweet.get("screen_name") or fetch_data.get("username") or payload.get("author_handle", "")
         text = tweet.get("article", {}).get("full_text") or tweet.get("text") or payload.get("text") or ""
@@ -220,9 +219,10 @@ def build_markdown(fetch_data: Optional[Dict[str, Any]], payload: Dict[str, Any]
             "回复": tweet.get("replies_count"),
             "收藏": tweet.get("bookmarks"),
         }
-        media_lines = extract_media_lines(tweet.get("media", []) or [], image_width=image_width)
+        media_lines = extract_media_lines(tweet.get("media", []) or [])
     else:
-        published = payload.get("published_at", "")[:10]
+        published = payload.get("published_at", "")[:10] or today
+        modified = today
         author_name = payload.get("author_name", "")
         handle = payload.get("author_handle", "")
         text = payload.get("text", "") or "抓取失败，先保留原始链接。"
@@ -235,17 +235,20 @@ def build_markdown(fetch_data: Optional[Dict[str, Any]], payload: Dict[str, Any]
         media_lines = []
 
     info_parts = [f"{k} {v}" for k, v in metrics.items() if v not in (None, "", "0")]
-    author_value = format_author(author_name, handle)
-
-    frontmatter_lines = ["---", f"url: {normalized_url}"]
-    if author_value != "[]":
-        frontmatter_lines.append(f"author: {author_value}")
-    if published:
-        frontmatter_lines.append(f"published: {published}")
-    frontmatter_lines.append("---")
 
     lines = [
-        *frontmatter_lines,
+        "---",
+        "aliases: []",
+        "tags: []",
+        "up:",
+        f"url: {normalized_url}",
+        f"author: {format_author(author_name, handle)}",
+        f"published: {published}",
+        "source: X (Twitter)",
+        "fetch_method: x_bookmark_helper",
+        f"创建时间: {today}",
+        f"修改时间: {modified}",
+        "---",
         f"# {title}",
         "",
         "> [!INFO] 帖子信息",
@@ -273,38 +276,19 @@ def build_markdown(fetch_data: Optional[Dict[str, Any]], payload: Dict[str, Any]
     return "\n".join(lines).strip() + "\n", title
 
 
-def normalize_image_width(value: Any) -> str:
-    normalized = str(value or "").strip()
-    return normalized if re.fullmatch(r"[1-9]\d*", normalized) else ""
-
-
-def format_image_markdown(url: str, image_width: str = "") -> str:
-    clean_url = str(url or "").strip()
-    if not clean_url:
-        return ""
-    image_width = normalize_image_width(image_width)
-    if image_width:
-        return f"![{image_width}]({clean_url})"
-    return f"![]({clean_url})"
-
-
-def extract_media_lines(media_items: Any, image_width: str = "") -> list[str]:
+def extract_media_lines(media_items: Any) -> list[str]:
     lines: list[str] = []
     if isinstance(media_items, dict):
         for image in media_items.get("images", []) or []:
             if isinstance(image, dict) and image.get("url"):
-                image_line = format_image_markdown(image["url"], image_width)
-                if image_line:
-                    lines.append(image_line)
+                lines.append(f"![]({image['url']})")
 
         for video in media_items.get("videos", []) or []:
             if not isinstance(video, dict):
                 continue
             thumbnail = video.get("thumbnail")
             if thumbnail:
-                image_line = format_image_markdown(thumbnail, image_width)
-                if image_line:
-                    lines.append(image_line)
+                lines.append(f"![]({thumbnail})")
             video_url = video.get("url")
             if video_url:
                 lines.append(f"[视频链接]({video_url})")
@@ -325,9 +309,7 @@ def extract_media_lines(media_items: Any, image_width: str = "") -> list[str]:
                 or item.get("original")
             )
         if media_url:
-            image_line = format_image_markdown(media_url, image_width)
-            if image_line:
-                lines.append(image_line)
+            lines.append(f"![]({media_url})")
     return dedupe_lines(lines)
 
 
@@ -430,7 +412,7 @@ def main() -> None:
         if action == "ping":
             send_message({
                 "success": True,
-                "version": "2.2.0",
+                "version": "2.4.0",
                 "output_dir": DEFAULT_OUTPUT_DIR,
                 "x_fetcher": str(X_FETCHER_PATH),
             })

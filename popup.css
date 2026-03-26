@@ -46,10 +46,6 @@ h1 {
   font-size: 13px;
 }
 
-.field-label-spaced {
-  margin-top: 12px;
-}
-
 .text-input {
   width: 100%;
   box-sizing: border-box;
@@ -66,6 +62,21 @@ h1 {
   margin-top: 10px;
 }
 
+.compact-input {
+  padding: 8px 10px;
+  margin-bottom: 10px;
+}
+
+.clear-action {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(31, 41, 55, 0.08);
+}
+
+.is-hidden {
+  display: none;
+}
+
 button {
   border: 0;
   border-radius: 10px;
@@ -74,6 +85,11 @@ button {
   padding: 9px 12px;
   cursor: pointer;
   font: inherit;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: wait;
 }
 
 button.secondary {

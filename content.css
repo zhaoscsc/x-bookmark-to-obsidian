@@ -39,3 +39,63 @@
 .x-bto-info {
   background: rgba(31, 41, 55, 0.96);
 }
+
+#x-bookmark-to-obsidian-hud {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 2147483646;
+  width: 320px;
+  padding: 14px 14px 12px;
+  border-radius: 16px;
+  color: #f8fafc;
+  background: rgba(15, 23, 42, 0.94);
+  box-shadow: 0 18px 38px rgba(15, 23, 42, 0.28);
+  backdrop-filter: blur(12px);
+  font: 13px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+#x-bookmark-to-obsidian-hud.is-completed {
+  background: rgba(22, 78, 99, 0.94);
+}
+
+.x-bto-hud__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.x-bto-hud__eyebrow {
+  margin: 0 0 2px;
+  opacity: 0.78;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.x-bto-hud__title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.x-bto-hud__close {
+  border: 0;
+  background: transparent;
+  color: rgba(248, 250, 252, 0.82);
+  font: inherit;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+}
+
+.x-bto-hud__line {
+  margin: 6px 0 0;
+}
+
+.x-bto-hud__line--muted {
+  color: rgba(248, 250, 252, 0.78);
+}

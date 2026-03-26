@@ -15,19 +15,32 @@
         <h2>保存路径</h2>
         <label class="field-label" for="output-dir">Obsidian 绝对路径</label>
         <input id="output-dir" class="text-input mono" type="text" placeholder="/Users/yourname/Documents/your-vault/1-输入/01-待整理" />
-        <label class="field-label field-label-spaced" for="image-width">图片显示宽度（可选）</label>
-        <input id="image-width" class="text-input mono" type="text" inputmode="numeric" placeholder="例如 400，留空则使用默认大小" />
         <div class="button-row">
           <button id="save-dir" type="button">保存设置</button>
           <button id="pick-dir" type="button" class="secondary">选择文件夹</button>
         </div>
-        <p id="save-dir-status" class="helper-text">建议填写到你自己的收件箱目录。图片宽度留空时，仍按默认大小保存。</p>
+        <p id="save-dir-status" class="helper-text">建议填写到你自己的收件箱目录。</p>
       </section>
 
       <section class="card">
         <h2>运行状态</h2>
         <p id="native-status">正在检查 Native Host...</p>
         <p id="last-result">最近一次保存：暂无记录</p>
+      </section>
+
+      <section class="card">
+        <h2>书签页同步</h2>
+        <p class="helper-text">先打开 X 的书签页，再设置本轮目标同步条数。滚动深度由插件自动估算。</p>
+        <label class="field-label" for="target-sync-count">目标同步条数</label>
+        <input id="target-sync-count" class="text-input mono compact-input" type="number" min="1" max="200" step="1" />
+        <button id="sync-bookmarks" type="button">同步当前书签页</button>
+        <p id="sync-status" class="helper-text">运行中会在 X 书签页右上角显示常驻进度面板。</p>
+        <p id="sync-last-result" class="helper-text">最近一次批量同步：暂无记录。</p>
+        <div id="clear-action" class="clear-action is-hidden">
+          <p id="clear-prompt" class="helper-text">本轮同步完成后，可选择清除本轮成功书签。</p>
+          <button id="clear-bookmarks" type="button" class="secondary">清除本轮成功书签</button>
+          <p id="clear-status" class="helper-text">默认不自动清除，避免误操作。</p>
+        </div>
       </section>
 
       <section class="card">

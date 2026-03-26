@@ -4,23 +4,6 @@ A Chrome extension + bundled macOS installer for saving X bookmarks into Obsidia
 
 你在 `x.com` 点击收藏后，插件会自动抓取帖子内容，并把它保存成 Markdown 笔记写入 Obsidian。
 
-## 3 分钟安装完成
-
-如果你只想先装起来，不想先看完整说明，按这 4 步就够了：
-
-1. 从 Release 下载 `x-bookmark-to-obsidian-extension.zip` 和 `x-bookmark-to-obsidian-installer.zip`
-2. 解压 `extension.zip`，去 `chrome://extensions` 开启开发者模式，然后“加载已解压的扩展程序”
-3. 解压 `installer.zip`，运行 `install.command`
-4. 重启 Chrome，打开扩展弹窗，选择你的 Obsidian 保存目录
-
-如果 macOS 拦截 `install.command`：
-
-- 先不要点“移到废纸篓”
-- 去 `系统设置 -> 隐私与安全性` 放行
-- 或在 Finder 里右键 `install.command`，选择“打开”
-
-如果你想让 `Claude Code` 或 `Codex` 帮你装，可以直接看后面的“让 AI 帮你安装”一节。
-
 这个仓库适合想要实现下面这类工作流的人：
 
 - 在 X 上看到值得留存的内容，顺手点收藏
@@ -56,10 +39,10 @@ A Chrome extension + bundled macOS installer for saving X bookmarks into Obsidia
 ## 功能概览
 
 - 监听 `x.com` 上的收藏动作，只在确认收藏成功后触发保存
+- 支持在书签页手动触发批量同步，自动估算滚动深度并向后加载更多帖子
 - 使用发行包内置的抓取脚本获取帖子正文
 - 抓取失败时自动降级为占位笔记，避免收藏动作丢失
 - 支持图片和视频封面链接写入 Markdown
-- 支持为图片和视频封面设置统一显示宽度
 - 通过 `url:` 字段去重，避免重复创建同一条帖子笔记
 - 支持在插件弹窗中自定义保存到任意 Obsidian 绝对路径
 
@@ -71,6 +54,43 @@ A Chrome extension + bundled macOS installer for saving X bookmarks into Obsidia
 4. Native Host 调用发行包内置抓取脚本获取完整内容。
 5. 成功时生成完整 Markdown；失败时生成包含原帖链接的降级笔记。
 6. 写入你配置好的 Obsidian 目录，并根据 `url:` 做去重。
+
+## 书签页批量同步
+
+除了“点收藏即保存”，现在也支持在 `x.com/i/bookmarks` 页面执行一次批量同步。
+
+使用方式：
+
+1. 打开 X 书签页 `https://x.com/i/bookmarks`
+2. 点击扩展弹窗中的“同步当前书签页”
+3. 设置“目标同步条数”
+4. 插件会自动估算滚动深度，从顶部开始向后滚动加载更多帖子
+5. 每轮收集新出现的帖子 URL，并沿用现有单帖保存链路写入 Obsidian
+6. 同步和清除进行中，X 书签页右上角会显示常驻进度面板
+7. 如果失败，弹窗会显示最近一次批量同步的主要失败原因
+8. 连续几轮没有发现新内容后自动停止，并返回同步统计
+9. 同步完成后，如果存在“新保存 + 去重确认已存在”的帖子，可在弹窗里选择继续清除这批 X 书签
+
+默认参数：
+
+- 单次最多尝试同步 80 条
+- 内部会按“目标条数”自动估算滚动深度
+- 连续 3 轮没有新内容就停止
+
+你可以在弹窗中修改：
+
+- `目标同步条数`：本轮最多希望同步多少条帖子
+
+说明：
+
+- 同步过程中仍会按 `url:` 去重
+- 已在当前页面刚保存过的帖子，也会被前端短时间内跳过，避免重复提交
+- 这不是 X 官方 API 同步，所以仍然依赖书签页懒加载和 DOM 结构稳定
+- 如果你在书签页中段才开始同步，插件会先回到顶部再开始滚动
+- 批量同步结果会记录在弹窗里，包括最近一次主要失败原因
+- 页面右上角的常驻进度面板会显示同步/清除的实时进度、失败和停止原因
+- 清除书签是手动第二步，不会默认自动执行
+- 只有“新保存 + 去重确认已存在”的条目才会进入可清除列表；失败和降级保存不会被清除
 
 ## 系统要求
 
@@ -95,32 +115,6 @@ A Chrome extension + bundled macOS installer for saving X bookmarks into Obsidia
 
 - `x-bookmark-to-obsidian-installer.zip`
 
-## 让 AI 帮你安装
-
-如果你使用的是 `Claude Code`、`Codex` 这类可以在你本机执行命令的 AI 代理，也可以把这个仓库链接直接发给它，让它帮你完成大部分安装流程。
-
-建议直接把下面这段话发给 AI：
-
-```text
-请帮我在这台 Mac 上安装这个 Chrome 扩展：
-https://github.com/zhaoscsc/x-bookmark-to-obsidian
-
-请按这个顺序执行：
-1. 克隆或下载仓库
-2. 运行 install.command
-3. 检查 Native Host 是否安装成功
-4. 告诉我在 Chrome 里如何加载已解压扩展
-5. 引导我在扩展弹窗里设置 Obsidian 保存路径
-6. 最后验证扩展是否已经可用
-
-如果某一步需要我手动点击，请明确告诉我该点哪里。
-不要修改我的其他目录或系统设置。
-```
-
-更适合 AI 执行的详细步骤说明见：
-
-- [INSTALL_FOR_AI.md](./INSTALL_FOR_AI.md)
-
 ### 1. 加载 Chrome 扩展
 
 1. 打开 `chrome://extensions`
@@ -135,25 +129,6 @@ https://github.com/zhaoscsc/x-bookmark-to-obsidian
 ```bash
 install.command
 ```
-
-如果 macOS 弹出“无法打开”或“建议移到废纸篓”这类提示，不用慌，这通常是因为安装器还没有经过 Apple 签名和公证，不代表它一定有问题。
-
-推荐按这个顺序处理：
-
-1. 不要点“移到废纸篓”
-2. 打开 `系统设置 -> 隐私与安全性`
-3. 在页面下方找到刚刚被拦截的 `install.command`
-4. 点击“仍要打开”或同类放行按钮
-5. 再回到 Finder 重新打开一次
-
-如果你更习惯 Finder 的右键菜单，也可以尝试：
-
-1. 在 Finder 中找到 `install.command`
-2. 右键点击它
-3. 选择“打开”
-4. 在弹窗里再次点击“打开”
-
-这两种方式都比“移到废纸篓”更适合当前版本。
 
 这一步会自动完成：
 
@@ -191,34 +166,6 @@ install.command
 - 建议使用收件箱、待整理区或输入区
 - 目录必须真实存在
 
-## 配置图片显示宽度
-
-打开插件弹窗，在“图片显示宽度（可选）”里：
-
-- 留空：继续使用默认输出
-- 填写正整数，例如 `400`：后续新保存的图片和视频封面会按这个宽度输出
-
-示例：
-
-- 留空时：
-
-```md
-![](https://pbs.twimg.com/media/example.jpg)
-```
-
-- 填 `400` 时：
-
-```md
-![400](https://pbs.twimg.com/media/example.jpg)
-```
-
-说明：
-
-- 这是插件级全局设置
-- 同时作用于普通图片和视频封面
-- 只影响后续新保存的笔记，不会批量修改历史笔记
-- 非法值会回退成默认输出
-
 ## 输出格式
 
 生成的 Markdown 默认会保留这些信息：
@@ -229,23 +176,24 @@ install.command
 - 正文内容
 - 互动信息
 - 图片链接或视频封面
-- 可选的图片显示宽度
 - 抓取失败时的说明信息
 
 示例 frontmatter：
 
 ```yaml
 ---
+aliases: []
+tags: []
+up:
 url: https://x.com/user/status/123
 author: [作者名 @handle]
 published: 2026-03-20
+source: X (Twitter)
+fetch_method: x_bookmark_helper
+创建时间: 2026-03-20
+修改时间: 2026-03-20
 ---
 ```
-
-说明：
-
-- frontmatter 只保留有值字段
-- 如果某条帖子缺少作者或发布时间，对应字段会直接省略
 
 ## 使用方式
 
@@ -254,6 +202,14 @@ published: 2026-03-20
 3. 点击收藏
 4. 插件会提示“正在保存到 Obsidian...”
 5. 成功后笔记会出现在你配置的目录里
+
+如果你想把已有书签批量导入：
+
+1. 打开 `x.com/i/bookmarks`
+2. 点开插件弹窗
+3. 点击“同步当前书签页”
+4. 如有需要，先调整“目标同步条数”
+5. 等待弹窗或页面 toast 显示同步结果
 
 ## 常见问题
 
@@ -265,17 +221,6 @@ published: 2026-03-20
 - 是否已经运行过 `install.command`
 - Chrome 是否已重启
 - 如果之前装过旧版本，尝试重新运行一次安装器
-
-### 1.1 双击 `install.command` 时被 macOS 拦截
-
-这是当前版本最常见的安装摩擦点。
-
-你可以优先这样处理：
-
-- 去 `系统设置 -> 隐私与安全性` 中放行刚刚被拦截的 `install.command`
-- 或在 Finder 中右键 `install.command`，选择“打开”
-
-如果你看到“移到废纸篓”，先不要这么做。当前更合适的做法是先放行，再重新打开。
 
 ### 2. 纯文字帖子能保存，图片帖子失败
 
@@ -310,12 +255,17 @@ published: 2026-03-20
 - 目前主要针对 macOS + Chrome 工作流
 - 不直接调用 Obsidian Web Clipper 内部接口
 - 当前仍需要本机安装器，不支持“只加载扩展 ZIP 就完整可用”
+- 书签页批量同步目前是手动触发，不会后台持续自动跑完整历史
 
 ## 版本说明
 
-`v2.2.0` 的核心能力：
+`v2.4.0` 的核心能力：
 
 - 点收藏即自动保存到 Obsidian
+- 支持书签页批量同步和自动估算滚动深度
+- 支持页面右上角常驻进度面板，实时显示同步/清除状态
+- 支持在弹窗中设置目标同步条数，并显示最近一次失败原因
+- 支持同步完成后手动清除本轮成功或已去重书签
 - 支持带图片的帖子
 - 支持自定义保存绝对路径
 - 支持抓取失败降级和 URL 去重
